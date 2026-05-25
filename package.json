@@ -1,0 +1,80 @@
+{
+  "name": "liqvued",
+  "types": "./index.d.ts",
+  "version": "0.1.0",
+  "description": "Liquid-glass for Vue",
+  "exports": {
+    ".": {
+      "import": {
+        "development": "./src/index.ts",
+        "default": "./dist/liqvued.mjs"
+      },
+      "require": {
+        "development": "./src/index.ts",
+        "default": "./dist/liqvued.umd.js"
+      }
+    },
+    "./src/*": "./src/*",
+    "./dist/*": "./dist/*",
+    "./style.css": "./dist/liqvued.css"
+  },
+  "main": "./dist/liqvued.umd.cjs",
+  "module": "./dist/liqvued.mjs",
+  "source": "./src/index.ts",
+  "files": [
+    "dist",
+    "src",
+    "index.d.ts"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint src --fix --ext .ts,.js,.cjs,.vue,.tsx,.jsx",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "pnpm --filter liqvued-docs docs:dev",
+    "docs:build": "pnpm --filter liqvued-docs docs:build",
+    "docs:preview": "pnpm --filter liqvued-docs docs:preview"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "vue.js",
+    "typescript",
+    "liquid",
+    "glass",
+    "liquid-glass",
+    "liquid glass",
+    "liqvued"
+  ],
+  "author": "Igor Voytovich",
+  "license": "MIT",
+  "repository": "https://github.com/IVoyt/liqvued",
+  "packageManager": "pnpm@10.33.4",
+  "peerDependencies": {
+    "vue": "^3.5.14"
+  },
+  "devDependencies": {
+    "@intlify/unplugin-vue-i18n": "^11.1.1",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^22.19.15",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vitejs/plugin-vue-jsx": "^5.1.5",
+    "eslint": "^10.3.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-case-police": "^2.2.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-sonarjs": "^4.0.3",
+    "eslint-plugin-unicorn": "^64.0.0",
+    "eslint-plugin-vue": "^10.9.0",
+    "sass-embedded": "^1.98.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.0",
+    "unplugin-vue-components": "^28.8.0",
+    "vite": "^8.0.10",
+    "vue-eslint-parser": "^10.4.0",
+    "vue-tsc": "^3.2.6"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "liqvued-docs",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "@primeuix/themes": "^2.0.3",
+    "primevue": "^4.5.5",
+    "vitepress": "^2.0.0-alpha.17"
+  }
+}
