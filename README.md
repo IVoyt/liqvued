@@ -8,6 +8,10 @@ A Vue 3 component for creating liquid glass effects using SVG filter primitives.
 
 Inspired by [Liquid Glass CSS/SVG](https://kube.io/blog/liquid-glass-css-svg/)
 
+## Documentation
+
+[View Documentation & Demo](https://ivoyt.github.io/liqvued)
+
 ## Features
 
 - **Real-time SVG filter generation** — displacement maps computed via Canvas API
