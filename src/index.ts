@@ -1,5 +1,5 @@
 import { Plugin } from 'vue'
-import Liqvued from '@liqvued/Liqvued.vue'
+import Liqvued from './Liqvued.vue'
 import type { Surface } from './types'
 
 const LiqvuedPlugin: Plugin = {
