@@ -171,7 +171,7 @@ function canvasToUrl(canvas: HTMLCanvasElement) {
 }
 
 function buildMaps() {
-  if (!props.fallbackOnly) {
+  if (props.fallbackOnly) {
     return
   }
 
@@ -312,7 +312,7 @@ const glassBgValue = computed(() => {
 })
 
 const backdropFilter = computed(() => {
-  if (!props.fallbackOnly || !supportsLiquidGlass) {
+  if (props.fallbackOnly || !supportsLiquidGlass) {
     return 'blur(12px)'
   }
   return `url(#${filterId}) blur(${props.blur}px)`
