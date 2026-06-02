@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   type Component,
-  type ComponentPublicInstance,
   computed,
   inject,
   nextTick,
@@ -17,6 +16,7 @@ const props = withDefaults(defineProps<{
   as?: string | Component
   asProps?: object
   radius?: number
+  borderRadius?: string
   bezel?: number
   thickness?: number
   refraction?: number
@@ -25,9 +25,11 @@ const props = withDefaults(defineProps<{
   specularOpacity?: number
   glareAngle?: number
   glassBackground?: string
+  fallbackOnly?: boolean
 }>(), {
   as: 'div',
   asProps: () => ({}),
+  fallbackOnly: true,
   radius: 32,
   bezel: 22,
   thickness: 42,
@@ -39,7 +41,7 @@ const props = withDefaults(defineProps<{
   glassBackground: undefined,
 })
 
-const root = ref<HTMLElement | ComponentPublicInstance | null>(null)
+const root = ref<HTMLElement | null>(null)
 
 const width = ref(1)
 const height = ref(1)
@@ -54,6 +56,11 @@ const id = `lg-${Math.random().toString(36).slice(2)}`
 const filterId = `${id}-filter`
 const isNested = inject('_liqvued', false)
 provide('_liqvued', true)
+
+if (import.meta.env.DEV && typeof props.as !== 'string') {
+  console.warn('[Liqvued] `as` prop should be a string (HTML tag name). For Vue components, use Liqvued as a wrapper instead of `as`.')
+}
+
 const glassReady = ref(false)
 
 const roundedMap: Record<string, number> = {
@@ -68,9 +75,7 @@ const roundedMap: Record<string, number> = {
 }
 
 function getRootEl(): HTMLElement | null {
-  if (!root.value) return null
-  if (root.value instanceof Element) return root.value as HTMLElement
-  return (root.value as ComponentPublicInstance).$el ?? null
+  return root.value
 }
 
 function clamp(v: number, min = 0, max = 1) {
@@ -120,20 +125,16 @@ function distanceToRoundedRectEdge(
   h: number,
   r: number,
 ) {
-  const cx = clamp(x, r, w - r)
-  const cy = clamp(y, r, h - r)
+  const hr = Math.min(r, Math.min(w, h) / 2)
+  const hw = w / 2 - hr
+  const hh = h / 2 - hr
+  const ax = Math.abs(x - w / 2) - hw
+  const ay = Math.abs(y - h / 2) - hh
 
-  const dx = x - cx
-  const dy = y - cy
+  const outsidePart = Math.hypot(Math.max(ax, 0), Math.max(ay, 0))
+  const insidePart = Math.min(Math.max(ax, ay), 0)
 
-  const cornerDistance = Math.hypot(dx, dy)
-  const edgeDistance = Math.min(x, y, w - x, h - y)
-
-  if (dx !== 0 && dy !== 0) {
-    return r - cornerDistance
-  }
-
-  return edgeDistance
+  return -(insidePart + outsidePart - hr)
 }
 
 function normalFromRoundedRect(
@@ -141,33 +142,28 @@ function normalFromRoundedRect(
   y: number,
   w: number,
   h: number,
-  r: number,
 ) {
-  const cx = clamp(x, r, w - r)
-  const cy = clamp(y, r, h - r)
+  const dx = Math.min(x, w - 1 - x)
+  const dy = Math.min(y, h - 1 - y)
 
-  let nx = x - cx
-  let ny = y - cy
+  const p = 4
+  const wsum = Math.pow(dx, p) + Math.pow(dy, p)
 
-  if (nx === 0 && ny === 0) {
-    const left = x
-    const right = w - x
-    const top = y
-    const bottom = h - y
-    const m = Math.min(left, right, top, bottom)
+  let nx: number
+  let ny: number
 
-    if (m === left) nx = -1
-    else if (m === right) nx = 1
-    else if (m === top) ny = -1
-    else ny = 1
+  if (wsum > 1e-10) {
+    nx = (x > w / 2 ? 1 : -1) * (Math.pow(dy, p) / wsum)
+    ny = (y > h / 2 ? 1 : -1) * (Math.pow(dx, p) / wsum)
+  } else {
+    nx = x > w / 2 ? 1 : -1
+    ny = y > h / 2 ? 1 : -1
   }
 
-  const len = Math.hypot(nx, ny) || 1
+  const len = Math.hypot(nx, ny)
+  if (len < 1e-10) return { x: 0, y: -1 }
 
-  return {
-    x: nx / len,
-    y: ny / len,
-  }
+  return { x: nx / len, y: ny / len }
 }
 
 function canvasToUrl(canvas: HTMLCanvasElement) {
@@ -175,6 +171,10 @@ function canvasToUrl(canvas: HTMLCanvasElement) {
 }
 
 function buildMaps() {
+  if (!props.fallbackOnly) {
+    return
+  }
+
   const w = Math.max(1, Math.round(width.value))
   const h = Math.max(1, Math.round(height.value))
 
@@ -210,7 +210,7 @@ function buildMaps() {
       let spec = 0
 
       if (dist >= 0 && dist < props.bezel) {
-        const n = normalFromRoundedRect(x, y, w, h, resolvedRadius.value)
+        const n = normalFromRoundedRect(x, y, w, h)
         const slope = derivative(t)
         const bend = refractSlope(slope)
 
@@ -276,6 +276,10 @@ const resolvedRadius = computed(() => {
   return props.radius
 })
 
+const borderRadios = computed(() => {
+  return props.borderRadius || `${resolvedRadius.value}px`
+})
+
 const vuetifyThemeColors = new Set([
   'primary', 'secondary', 'accent', 'info', 'warning', 'error', 'success',
   'surface', 'background',
@@ -308,14 +312,14 @@ const glassBgValue = computed(() => {
 })
 
 const backdropFilter = computed(() => {
-  if (supportsLiquidGlass) {
-    return `url(#${filterId}) blur(${props.blur}px)`
+  if (!props.fallbackOnly || !supportsLiquidGlass) {
+    return 'blur(12px)'
   }
-  return 'blur(12px)'
+  return `url(#${filterId}) blur(${props.blur}px)`
 })
 
 const rootStyle = computed(() => ({
-  borderRadius: `${resolvedRadius.value}px`,
+  borderRadius: `${borderRadios.value}`,
   ...(glassBgValue.value !== undefined
     ? { backgroundColor: glassBgValue.value }
     : {}),
@@ -374,6 +378,7 @@ watch(
     props.surface,
     props.specularOpacity,
     props.glareAngle,
+    props.fallbackOnly,
   ],
   () => {
     if (supportsLiquidGlass) {
@@ -386,15 +391,12 @@ watch(
 onBeforeUnmount(() => {
   ro?.disconnect()
 })
-
 </script>
 
 <template>
-  <component
-    :is="as"
+  <div
     ref="root"
     class="liquid-glass"
-    v-bind="asProps"
     :style="rootStyle"
   >
     <svg
@@ -421,9 +423,15 @@ onBeforeUnmount(() => {
             result="displacement_map"
           />
 
+          <feGaussianBlur
+            in="displacement_map"
+            stdDeviation="2"
+            result="smooth_disp"
+          />
+
           <feDisplacementMap
             in="SourceGraphic"
-            in2="displacement_map"
+            in2="smooth_disp"
             :scale="scale"
             xChannelSelector="R"
             yChannelSelector="G"
@@ -444,8 +452,13 @@ onBeforeUnmount(() => {
       </defs>
     </svg>
 
-    <slot />
-  </component>
+    <component
+      :is="as"
+      v-bind="asProps"
+    >
+      <slot />
+    </component>
+  </div>
 </template>
 
 <style scoped>
