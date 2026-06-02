@@ -29,7 +29,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   as: 'div',
   asProps: () => ({}),
-  fallbackOnly: true,
+  fallbackOnly: false,
   radius: 32,
   bezel: 22,
   thickness: 42,

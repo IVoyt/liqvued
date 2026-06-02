@@ -104,16 +104,18 @@ A per-pixel displacement map is generated on a Canvas, encoded as a PNG data URL
 
 ## Props
 
-| Prop               | Type                    | Default    | Description                                                                      |
-|--------------------|-------------------------|------------|----------------------------------------------------------------------------------|
-| `as`               | `string \| Component`   | `'div'`    | HTML tag or Vue component to render as                                           |
-| `asProps`          | `object`                | `{}`       | Props passed to the rendered element/component                                   |
-| `radius`           | `number`                | `32`       | Corner radius in pixels                                                          |
-| `bezel`            | `number`                | `22`       | Width of the displacement bezel in pixels                                        |
-| `thickness`        | `number`                | `42`       | Maximum displacement magnitude in pixels                                         |
-| `refraction`       | `number`                | `1`        | Refraction index multiplier                                                      |
-| `blur`             | `number`                | `0.4`      | CSS backdrop-filter blur amount                                                  |
-| `surface`          | [`Surface`](/api#types) | `'convex'` | Surface profile shape                                                            |
-| `specularOpacity`  | `number`                | `0.45`     | Opacity of the specular highlight                                                |
-| `glareAngle`       | `number`                | `-60`      | Light source angle in degrees for specular highlight                             |
-| `glassBackground`  | `string`                | —          | Glass panel background color (auto-derived from `asProps.color` when available)  |
+| Prop               | Type                    | Default    | Description                                                                              |
+|--------------------|-------------------------|------------|------------------------------------------------------------------------------------------|
+| `as`               | `string \| Component`   | `'div'`    | HTML tag or Vue component to render as (rendered as a child of the glass root)           |
+| `asProps`          | `object`                | `{}`       | Props passed to the rendered element/component                                           |
+| `radius`           | `number`                | `32`       | Corner radius in pixels                                                                  |
+| `borderRadius`     | `string`                | —          | Per-corner border-radius CSS value (e.g. `"10px 20px 10px 20px"`); overrides `radius`    |
+| `bezel`            | `number`                | `22`       | Width of the displacement bezel in pixels                                                |
+| `thickness`        | `number`                | `42`       | Maximum displacement magnitude in pixels                                                 |
+| `refraction`       | `number`                | `1`        | Refraction index multiplier                                                              |
+| `blur`             | `number`                | `0.4`      | CSS backdrop-filter blur amount                                                          |
+| `surface`          | [`Surface`](/api#types) | `'convex'` | Surface profile shape                                                                    |
+| `specularOpacity`  | `number`                | `0.45`     | Opacity of the specular highlight                                                        |
+| `glareAngle`       | `number`                | `-60`      | Light source angle in degrees for specular highlight                                     |
+| `glassBackground`  | `string`                | —          | Glass panel background color (auto-derived from `asProps.color` when available)          |
+| `fallbackOnly`     | `boolean`               | `false`    | When `true`, disables the SVG displacement effect and uses only CSS blur                 |
