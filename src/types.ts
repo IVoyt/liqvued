@@ -1,1 +1,10 @@
-export type Surface = 'convex' | 'concave' | 'lip'
+export type Surface =
+  | 'convex'
+  | 'concave'
+  | 'lip'
+  | 'bowl'
+  | 'bevel'
+  | 'saddle'
+  | 'ripple'
+  | 'noise'
+  | 'asymmetric'

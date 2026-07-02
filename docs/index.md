@@ -22,7 +22,7 @@ features:
     details: Per-pixel displacement maps computed from mathematical surface profiles — each shape produces a distinct refraction pattern.
   - icon: 🎨
     title: Multiple Surface Types
-    details: Choose from convex, concave, and lip profiles — each producing a distinct glass shape and edge distortion.
+    details: Choose from convex, concave, lip, bowl, bevel, saddle, ripple, noise, and asymmetric profiles.
   - icon: ⚡
     title: Real-Time SVG Filters
     details: Displacement maps are generated on-the-fly via Canvas API and injected as an inline SVG filter primitive.
@@ -31,7 +31,7 @@ features:
     details: Built as a Vue 3 component with full TypeScript support. Slot-based content lets you wrap any element in glass.
   - icon: 🎛️
     title: Fully Configurable
-    details: Control corner radius, bezel width, displacement thickness, refraction index, blur, and surface type through component props.
+    details: Control corner radius, bezel width, displacement thickness, refraction, center magnification, magnification focus, blur, and surface type through component props.
   - icon: 🌐
     title: Lightweight
     details: Zero runtime dependencies beyond Vue. Just pure math, Canvas, and SVG.
