@@ -10,6 +10,7 @@ import {
   ref,
   watch,
 } from 'vue'
+import { distanceToRoundedRectEdge, normalFromRoundedRect } from './shape'
 import type { Surface } from './types'
 
 const props = withDefaults(defineProps<{
@@ -20,6 +21,8 @@ const props = withDefaults(defineProps<{
   bezel?: number
   thickness?: number
   refraction?: number
+  magnification?: number
+  magnificationFocus?: number
   blur?: number
   surface?: Surface
   specularOpacity?: number
@@ -34,6 +37,8 @@ const props = withDefaults(defineProps<{
   bezel: 22,
   thickness: 42,
   refraction: 1,
+  magnification: 0,
+  magnificationFocus: 0.82,
   blur: 0.4,
   surface: 'convex',
   specularOpacity: 0.45,
@@ -49,6 +54,8 @@ const mapUrl = ref('')
 const specularUrl = ref('')
 const scale = ref(1)
 const supportsLiquidGlass =
+  typeof CSS !== 'undefined' &&
+  typeof navigator !== 'undefined' &&
   CSS.supports?.('backdrop-filter', 'url(#x)') &&
   /Chrome/.test(navigator.userAgent)
 
@@ -91,13 +98,67 @@ function convex(x: number) {
   return Math.pow(1 - Math.pow(1 - clamp(x), 4), 1 / 4)
 }
 
-function surfaceFn(x: number) {
-  if (props.surface === 'concave') return 1 - convex(x)
-  if (props.surface === 'lip') {
-    const t = smootherStep(x)
-    return convex(x) * (1 - t) + (1 - convex(x)) * t
+function wave(x: number, frequency: number, amplitude: number) {
+  return clamp(x + Math.sin(clamp(x) * Math.PI * frequency) * amplitude)
+}
+
+function deterministicNoise(x: number) {
+  const t = clamp(x)
+  return clamp(t + Math.sin(t * 39.1) * 0.06 + Math.sin(t * 91.7) * 0.035)
+}
+
+function magnificationVector(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  magnification: number,
+  magnificationFocus: number,
+) {
+  const cx = w / 2
+  const cy = h / 2
+  const rx = Math.max(1, w / 2)
+  const ry = Math.max(1, h / 2)
+  const dx = (x - cx) / rx
+  const dy = (y - cy) / ry
+  const radius = Math.hypot(dx, dy)
+  const focusRadius = clamp(magnificationFocus, 0.2, 1.4)
+  const focus = Math.pow(
+    smootherStep(1 - clamp(radius / focusRadius)),
+    1.6,
+  )
+  const zoom = magnification >= 0
+    ? 1 + magnification * focus
+    : 1 / (1 + Math.abs(magnification) * focus)
+
+  return {
+    x: (x - cx) / zoom - (x - cx),
+    y: (y - cy) / zoom - (y - cy),
   }
-  return convex(x)
+}
+
+function surfaceFn(x: number) {
+  const t = clamp(x)
+
+  switch (props.surface) {
+    case 'concave':
+    case 'bowl':
+      return 1 - convex(t)
+    case 'lip':
+      return convex(t) * (1 - smootherStep(t)) + (1 - convex(t)) * smootherStep(t)
+    case 'bevel':
+      return t
+    case 'saddle':
+      return 0.5 + Math.sin((t - 0.5) * Math.PI) * 0.5
+    case 'ripple':
+      return wave(t, 3, 0.12)
+    case 'noise':
+      return deterministicNoise(t)
+    case 'asymmetric':
+      return clamp(Math.pow(t, 0.65) * 0.65 + smootherStep(t) * 0.35)
+    case 'convex':
+      return convex(t)
+  }
 }
 
 function derivative(x: number) {
@@ -116,54 +177,6 @@ function refractSlope(slope: number) {
   const theta2 = Math.asin(clamp(sinTheta2, -1, 1))
 
   return Math.tan(theta1 - theta2)
-}
-
-function distanceToRoundedRectEdge(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  const hr = Math.min(r, Math.min(w, h) / 2)
-  const hw = w / 2 - hr
-  const hh = h / 2 - hr
-  const ax = Math.abs(x - w / 2) - hw
-  const ay = Math.abs(y - h / 2) - hh
-
-  const outsidePart = Math.hypot(Math.max(ax, 0), Math.max(ay, 0))
-  const insidePart = Math.min(Math.max(ax, ay), 0)
-
-  return -(insidePart + outsidePart - hr)
-}
-
-function normalFromRoundedRect(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) {
-  const dx = Math.min(x, w - 1 - x)
-  const dy = Math.min(y, h - 1 - y)
-
-  const p = 4
-  const wsum = Math.pow(dx, p) + Math.pow(dy, p)
-
-  let nx: number
-  let ny: number
-
-  if (wsum > 1e-10) {
-    nx = (x > w / 2 ? 1 : -1) * (Math.pow(dy, p) / wsum)
-    ny = (y > h / 2 ? 1 : -1) * (Math.pow(dx, p) / wsum)
-  } else {
-    nx = x > w / 2 ? 1 : -1
-    ny = y > h / 2 ? 1 : -1
-  }
-
-  const len = Math.hypot(nx, ny)
-  if (len < 1e-10) return { x: 0, y: -1 }
-
-  return { x: nx / len, y: ny / len }
 }
 
 function canvasToUrl(canvas: HTMLCanvasElement) {
@@ -199,23 +212,30 @@ function buildMaps() {
     x: Math.cos((props.glareAngle * Math.PI) / 180),
     y: Math.sin((props.glareAngle * Math.PI) / 180),
   }
+  const edgeBand = Math.max(
+    1,
+    Math.min(props.bezel, Math.min(w, h) * 0.28),
+  )
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const dist = distanceToRoundedRectEdge(x, y, w, h, resolvedRadius.value)
-      const t = clamp(dist / props.bezel)
+      const t = clamp(dist / edgeBand)
 
       let vx = 0
       let vy = 0
       let spec = 0
 
-      if (dist >= 0 && dist < props.bezel) {
-        const n = normalFromRoundedRect(x, y, w, h)
+      if (dist >= 0 && dist < edgeBand) {
+        const n = normalFromRoundedRect(x, y, w, h, resolvedRadius.value)
         const slope = derivative(t)
         const bend = refractSlope(slope)
 
         const amount =
-          bend * props.thickness * (1 - t) * props.refraction
+          bend *
+          props.thickness *
+          smootherStep(1 - t) *
+          props.refraction
 
         vx = -n.x * amount
         vy = -n.y * amount
@@ -224,6 +244,19 @@ function buildMaps() {
 
         const facing = clamp(n.x * light.x + n.y * light.y, 0, 1)
         spec = Math.pow(facing, 18) * props.specularOpacity
+      }
+
+      if (props.magnification !== 0 && dist >= 0) {
+        const lens = magnificationVector(
+          x,
+          y,
+          w,
+          h,
+          props.magnification,
+          props.magnificationFocus,
+        )
+        vx += lens.x
+        vy += lens.y
       }
 
       vectors.push([vx, vy])
@@ -237,6 +270,10 @@ function buildMaps() {
       hImage.data[hi + 3] = alpha
     }
   }
+
+  max = vectors.reduce((currentMax, [vx, vy]) => {
+    return Math.max(currentMax, Math.abs(vx), Math.abs(vy))
+  }, 1)
 
   vectors.forEach(([vx, vy], index) => {
     const i = index * 4
@@ -375,6 +412,8 @@ watch(
     props.bezel,
     props.thickness,
     props.refraction,
+    props.magnification,
+    props.magnificationFocus,
     props.surface,
     props.specularOpacity,
     props.glareAngle,

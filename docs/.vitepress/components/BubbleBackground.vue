@@ -13,6 +13,7 @@ interface Bubble {
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let animId = 0
+let observer: ResizeObserver | undefined
 let bubbles: Bubble[] = []
 let w = 0
 let h = 0
@@ -106,12 +107,17 @@ function resize() {
 
 onMounted(() => {
   resize()
+  if (canvasRef.value?.parentElement) {
+    observer = new ResizeObserver(resize)
+    observer.observe(canvasRef.value.parentElement)
+  }
   tick()
   window.addEventListener('resize', resize)
 })
 
 onUnmounted(() => {
   cancelAnimationFrame(animId)
+  observer?.disconnect()
   window.removeEventListener('resize', resize)
 })
 </script>

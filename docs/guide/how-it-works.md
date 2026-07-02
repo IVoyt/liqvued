@@ -18,7 +18,7 @@ CSS backdrop-filter: blur()
 Final output
 ```
 
-1. **Displacement Map** — An RGBA canvas image where the red/green channels encode X/Y displacement direction and magnitude. The displacement is calculated per-pixel based on the signed distance to the element edge and the surface profile's slope at that distance.
+1. **Displacement Map** — An RGBA canvas image where the red/green channels encode X/Y displacement direction and magnitude. The displacement is calculated per-pixel based on the signed distance to the element edge and the surface profile's slope at that distance. An optional center magnification field can be blended in separately.
 
 2. **Specular Highlight Map** — A separate canvas image that encodes surface lighting. Pixel alpha corresponds to highlight intensity, computed via Blinn-Phong shading against a configurable `glareAngle`.
 
@@ -30,10 +30,26 @@ Final output
 
 Each surface type is a mathematical profile that defines the displacement slope along the bezel:
 
-| Type      | Function                                         | Visual                                  |
-|-----------|--------------------------------------------------|-----------------------------------------|
-| `convex`  | `(1 - (1-x)⁴)^0.25`                              | Squircle bulge — soft pill-like edges   |
-| `concave` | `1 - convex(x)`                                  | Inverted bulge — dish-like inward curve |
-| `lip`     | Smooth convex→concave blend via smootherstep     | Raised rim, shallow dip                 |
+| Type          | Function / Pattern                               | Visual                                          |
+|---------------|--------------------------------------------------|-------------------------------------------------|
+| `convex`      | `(1 - (1-x)⁴)^0.25`                              | Squircle bulge — soft pill-like edges           |
+| `concave`     | `1 - convex(x)`                                  | Inverted bulge — dish-like inward curve         |
+| `lip`         | Smooth convex→concave blend via smootherstep     | Raised rim, shallow dip                         |
+| `bowl`        | Alias of the concave family                      | Broader inward pull                             |
+| `bevel`       | Linear ramp                                      | Harder edge transition                          |
+| `saddle`      | Sine-based mirrored transition                   | Direction change through the band               |
+| `ripple`      | Base profile plus wave modulation                | Repeating undulation                            |
+| `noise`       | Base profile plus deterministic noise            | Organic irregularity                            |
+| `asymmetric`  | Biased eased ramp                                | Uneven edge emphasis                            |
 
-The slope (derivative) of the height function at each bezel position determines the displacement vector magnitude. Pixels at the outer edge get the maximum displacement, while interior pixels remain unaffected.
+The slope (derivative) of the height function at each bezel position determines the displacement vector magnitude. Pixels at the outer edge get the maximum displacement, while interior pixels remain unaffected by edge refraction.
+
+## Center Magnification
+
+`magnification` is a separate modifier from `surface`. It affects the center of the glass instead of the bezel:
+
+- positive values enlarge the background under the glass
+- negative values shrink it
+- `magnificationFocus` controls how tightly that lens effect stays around the center
+
+This lets you combine a lens-like center with any edge surface profile.

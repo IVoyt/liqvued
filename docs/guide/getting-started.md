@@ -96,26 +96,34 @@ A per-pixel displacement map is generated on a Canvas, encoded as a PNG data URL
 
 ## Surface Types
 
-| Type      | Description                          | Appearance                                      |
-|-----------|--------------------------------------|-------------------------------------------------|
-| `convex`  | Squircle convex profile              | Soft, pill-like edges with inward refraction    |
-| `concave` | Inverted convex profile              | Inward-curving dish-like refraction             |
-| `lip`     | Smooth convex-to-concave transition  | S-curve that lifts at center and dips at edges  |
+| Type          | Description                          | Appearance                                              |
+|---------------|--------------------------------------|---------------------------------------------------------|
+| `convex`      | Squircle convex profile              | Soft, pill-like edges with inward refraction            |
+| `concave`     | Inverted convex profile              | Inward-curving dish-like refraction                     |
+| `lip`         | Smooth convex-to-concave transition  | S-curve that lifts at center and dips at edges          |
+| `bowl`        | Deeper concave profile               | Broader inward dish effect                              |
+| `bevel`       | Linear edge ramp                     | Harder, cleaner faceted-looking edge refraction         |
+| `saddle`      | Mirrored S-curve                     | Direction change through the middle of the edge band    |
+| `ripple`      | Wave-modulated profile               | Repeating small undulations across the edge band        |
+| `noise`       | Irregular deterministic profile      | Organic, uneven glass distortion                        |
+| `asymmetric`  | Biased convex profile                | Uneven weighting that shifts the perceived edge pull    |
 
 ## Props
 
-| Prop               | Type                    | Default    | Description                                                                              |
-|--------------------|-------------------------|------------|------------------------------------------------------------------------------------------|
-| `as`               | `string \| Component`   | `'div'`    | HTML tag or Vue component to render as (rendered as a child of the glass root)           |
-| `asProps`          | `object`                | `{}`       | Props passed to the rendered element/component                                           |
-| `radius`           | `number`                | `32`       | Corner radius in pixels                                                                  |
-| `borderRadius`     | `string`                | —          | Per-corner border-radius CSS value (e.g. `"10px 20px 10px 20px"`); overrides `radius`    |
-| `bezel`            | `number`                | `22`       | Width of the displacement bezel in pixels                                                |
-| `thickness`        | `number`                | `42`       | Maximum displacement magnitude in pixels                                                 |
-| `refraction`       | `number`                | `1`        | Refraction index multiplier                                                              |
-| `blur`             | `number`                | `0.4`      | CSS backdrop-filter blur amount                                                          |
-| `surface`          | [`Surface`](/api#types) | `'convex'` | Surface profile shape                                                                    |
-| `specularOpacity`  | `number`                | `0.45`     | Opacity of the specular highlight                                                        |
-| `glareAngle`       | `number`                | `-60`      | Light source angle in degrees for specular highlight                                     |
-| `glassBackground`  | `string`                | —          | Glass panel background color (auto-derived from `asProps.color` when available)          |
-| `fallbackOnly`     | `boolean`               | `false`    | When `true`, disables the SVG displacement effect and uses only CSS blur                 |
+| Prop                 | Type                    | Default    | Description                                                                              |
+|----------------------|-------------------------|------------|------------------------------------------------------------------------------------------|
+| `as`                 | `string \| Component`   | `'div'`    | HTML tag or Vue component to render as (rendered as a child of the glass root)           |
+| `asProps`            | `object`                | `{}`       | Props passed to the rendered element/component                                           |
+| `radius`             | `number`                | `32`       | Corner radius in pixels                                                                  |
+| `borderRadius`       | `string`                | —          | Per-corner border-radius CSS value (e.g. `"10px 20px 10px 20px"`); overrides `radius`    |
+| `bezel`              | `number`                | `22`       | Width of the displacement bezel in pixels                                                |
+| `thickness`          | `number`                | `42`       | Maximum displacement magnitude in pixels                                                 |
+| `refraction`         | `number`                | `1`        | Refraction index multiplier                                                              |
+| `magnification`      | `number`                | `0`        | Center magnification amount. Positive values enlarge, negative values shrink             |
+| `magnificationFocus` | `number`                | `0.82`     | Focus radius of the magnification area. Lower values keep the effect tighter             |
+| `blur`               | `number`                | `0.4`      | CSS backdrop-filter blur amount                                                          |
+| `surface`            | [`Surface`](/api#types) | `'convex'` | Surface profile shape                                                                    |
+| `specularOpacity`    | `number`                | `0.45`     | Opacity of the specular highlight                                                        |
+| `glareAngle`         | `number`                | `-60`      | Light source angle in degrees for specular highlight                                     |
+| `glassBackground`    | `string`                | —          | Glass panel background color (auto-derived from `asProps.color` when available)          |
+| `fallbackOnly`       | `boolean`               | `false`    | When `true`, disables the SVG displacement effect and uses only CSS blur                 |

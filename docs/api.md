@@ -15,6 +15,8 @@ The `<Liqvued>` component wraps content in a liquid glass effect using SVG filte
 | `bezel`           | `number`               | `22`       | Width of the displacement bezel in pixels                                             |
 | `thickness`       | `number`               | `42`       | Maximum displacement magnitude in pixels                                              |
 | `refraction`      | `number`               | `1`        | Refraction index multiplier                                                           |
+| `magnification`   | `number`               | `0`        | Center magnification amount. Positive values enlarge, negative values shrink          |
+| `magnificationFocus` | `number`            | `0.82`     | Focus radius of the magnification area. Lower values keep the lens tighter            |
 | `blur`            | `number`               | `0.4`      | CSS backdrop-filter blur amount                                                       |
 | `surface`         | [`Surface`](#types)    | `'convex'` | Glass surface profile shape                                                           |
 | `specularOpacity` | `number`               | `0.45`     | Opacity of the specular highlight                                                     |
@@ -41,13 +43,19 @@ import type { Surface } from 'liqvued'
 ```
 
 ```ts
-type Surface = 'convex' | 'concave' | 'lip'
+type Surface = 'convex' | 'concave' | 'lip' | 'bowl' | 'bevel' | 'saddle' | 'ripple' | 'noise' | 'asymmetric'
 ```
 
 ### Surface Types
 
-| Type       | Description                                                                   |
-|------------|-------------------------------------------------------------------------------|
-| `convex`   | Squircle convex profile — soft pill-like edges. Default.                      |
-| `concave`  | Inverted convex profile — inward-curving dish-like refraction.                |
-| `lip`      | Smooth transition from convex at center to concave at edge — S-curve profile. |
+| Type          | Description                                                                    |
+|---------------|--------------------------------------------------------------------------------|
+| `convex`      | Squircle convex profile — soft pill-like edges. Default.                       |
+| `concave`     | Inverted convex profile — inward-curving dish-like refraction.                 |
+| `lip`         | Smooth transition from convex at center to concave at edge — S-curve profile. |
+| `bowl`        | Deeper concave profile with a more even inward pull.                           |
+| `bevel`       | Linear edge ramp for harder, cleaner refraction.                               |
+| `saddle`      | Mirrored S-curve that changes direction through the middle.                    |
+| `ripple`      | Periodic wave modulation across the edge band.                                 |
+| `noise`       | Deterministic irregular profile for organic glass distortion.                  |
+| `asymmetric`  | Biased convex profile with more weight on one side of the edge band.           |

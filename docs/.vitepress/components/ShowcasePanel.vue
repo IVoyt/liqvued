@@ -1,6 +1,12 @@
 <script setup lang="ts">
+import { surfaceOptions } from '../../../src/surfaces'
 
 const surface = defineModel('surface')
+const bezel = defineModel<number>('bezel', { default: 36 })
+const thickness = defineModel<number>('thickness', { default: 60 })
+const refraction = defineModel<number>('refraction', { default: 1.6 })
+const magnification = defineModel<number>('magnification', { default: 0 })
+const magnificationFocus = defineModel<number>('magnificationFocus', { default: 0.82 })
 
 defineProps<{
   slider: number
@@ -26,15 +32,15 @@ const emit = defineEmits<{
       <span class="sc-label">Surface</span>
       <label class="sc-select">
         <select v-model="surface">
-          <option value="convex">Convex</option>
-          <option value="concave">Concave</option>
-          <option value="lip">Lip</option>
+          <option v-for="option in surfaceOptions" :key="option" :value="option">
+            {{ option }}
+          </option>
         </select>
       </label>
     </div>
 
     <div class="showcase-slider-row">
-      <span class="sc-label">Blur</span>
+      <span class="sc-label">Blur <strong>{{ slider.toFixed(1) }}</strong></span>
       <input
         :value="slider"
         type="range"
@@ -43,6 +49,66 @@ const emit = defineEmits<{
         max="10"
         class="sc-slider"
         @input="emit('update:slider', Number(($event.target as HTMLInputElement).value))"
+      >
+    </div>
+
+    <div class="showcase-slider-row">
+      <span class="sc-label">Thickness <strong>{{ thickness }}</strong></span>
+      <input
+        v-model.number="thickness"
+        type="range"
+        min="4"
+        step="1"
+        max="120"
+        class="sc-slider"
+      >
+    </div>
+
+    <div class="showcase-slider-row">
+      <span class="sc-label">Refraction <strong>{{ refraction.toFixed(1) }}</strong></span>
+      <input
+        v-model.number="refraction"
+        type="range"
+        min="0"
+        step="0.1"
+        max="3"
+        class="sc-slider"
+      >
+    </div>
+
+    <div class="showcase-slider-row">
+      <span class="sc-label">Bezel <strong>{{ bezel }}</strong></span>
+      <input
+        v-model.number="bezel"
+        type="range"
+        min="4"
+        step="1"
+        max="120"
+        class="sc-slider"
+      >
+    </div>
+
+    <div class="showcase-slider-row">
+      <span class="sc-label">Magnification <strong>{{ magnification.toFixed(1) }}</strong></span>
+      <input
+        v-model.number="magnification"
+        type="range"
+        min="-2"
+        step="0.1"
+        max="2"
+        class="sc-slider"
+      >
+    </div>
+
+    <div class="showcase-slider-row">
+      <span class="sc-label">Magnification Focus <strong>{{ magnificationFocus.toFixed(2) }}</strong></span>
+      <input
+        v-model.number="magnificationFocus"
+        type="range"
+        min="0.2"
+        step="0.01"
+        max="1.4"
+        class="sc-slider"
       >
     </div>
 

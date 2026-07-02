@@ -15,8 +15,8 @@ Inspired by [Liquid Glass CSS/SVG](https://kube.io/blog/liquid-glass-css-svg/)
 ## Features
 
 - **Real-time SVG filter generation** — displacement maps computed via Canvas API
-- **Multiple surface types** — convex, concave, lip
-- **Configurable optics** — bezel width, corner radius, displacement thickness, refraction index, glare angle
+- **Multiple surface types** — convex, concave, lip, bowl, bevel, saddle, ripple, noise, asymmetric
+- **Configurable optics** — bezel width, corner radius, displacement thickness, refraction, magnification, focus, glare angle
 - **Built-in glassmorphism styling** — gradient backgrounds, inset shadows, highlight overlays
 - **TypeScript** — full type definitions
 - **Lightweight** — minimal runtime dependencies beyond Vue
@@ -60,6 +60,8 @@ import { Liqvued } from 'liqvued'
 | bezel           | number              | 22         | Width of the displacement bezel in pixels                                              |
 | thickness       | number              | 42         | Maximum displacement magnitude in pixels                                               |
 | refraction      | number              | 1          | Refraction index multiplier                                                            |
+| magnification   | number              | 0          | Center magnification amount. Positive values enlarge, negative values shrink           |
+| magnificationFocus | number           | 0.82       | Focus radius of the magnification area. Lower values concentrate the effect near center |
 | blur            | number              | 0.4        | CSS backdrop-filter blur amount                                                        |
 | surface         | string              | `'convex'` | Glass surface profile shape                                                            |
 | specularOpacity | number              | 0.45       | Opacity of the specular highlight                                                      |
@@ -74,6 +76,12 @@ import { Liqvued } from 'liqvued'
 - `convex` — squircle convex profile — soft pill-like edges
 - `concave` — inverted convex — inward-curving dish-like refraction
 - `lip` — smooth transition from convex at center to concave at edge
+- `bowl` — deeper concave profile with a more even inward pull
+- `bevel` — linear edge ramp for harder, cleaner refraction
+- `saddle` — mirrored S-curve that shifts direction through the middle
+- `ripple` — small wave modulation across the edge band
+- `noise` — irregular organic edge distortion
+- `asymmetric` — biased profile with more weight toward one side of the edge band
 
 ## Dynamic Element Rendering
 
@@ -98,7 +106,7 @@ The fallback applies `backdrop-filter: blur(12px)` with a subtle border and shad
 
 ## How It Works
 
-The component generates a per-pixel displacement map as an RGBA PNG (red/green channels encode X/Y displacement vectors), injects it into an SVG `<feDisplacementMap>` filter, and applies it via `backdrop-filter` combined with CSS blur. The surface profile functions (`convex`, `concave`, `lip`) define the slope at each point along the bezel, which determines the displacement magnitude. A separate specular highlight map is generated and composited via `feBlend` to simulate surface lighting.
+The component generates a per-pixel displacement map as an RGBA PNG (red/green channels encode X/Y displacement vectors), injects it into an SVG `<feDisplacementMap>` filter, and applies it via `backdrop-filter` combined with CSS blur. The surface profile functions define the edge refraction slope along the bezel, while `magnification` and `magnificationFocus` control an optional center lens effect. A separate specular highlight map is generated and composited via `feBlend` to simulate surface lighting.
 
 ## License
 
