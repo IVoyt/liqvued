@@ -29,6 +29,7 @@ jobs:
       - name: Install package dependencies
         run: |
           rm -rf node_modules node_modules
+          pnpm approve-builds --all
           pnpm install
       - name: Install docs dependencies
         run: |
@@ -36,7 +37,7 @@ jobs:
           pnpm install
         working-directory: docs
       - name: Build
-        run: pnpm approve-builds --all && pnpm docs:build
+        run: pnpm docs:build
         working-directory: docs
       - id: pages
         uses: actions/configure-pages@v5
