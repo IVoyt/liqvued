@@ -42,7 +42,7 @@ Each surface type is a mathematical profile that defines the displacement slope 
 | `noise`       | Base profile plus deterministic noise            | Organic irregularity                            |
 | `asymmetric`  | Biased eased ramp                                | Uneven edge emphasis                            |
 
-The slope (derivative) of the height function at each bezel position determines the displacement vector magnitude. Pixels at the outer edge get the maximum displacement, while interior pixels remain unaffected by edge refraction.
+The slope (derivative) of the height function at each bezel position determines the displacement vector magnitude. `refractionMode` controls the vector direction: `edge` follows the rounded edge normal, `center` points inward from each edge toward the shape centerline, and `split` reverses direction between the outer and inner bezel halves with a neutral midpoint. Pixels at the outer edge get the maximum displacement, while interior pixels remain unaffected by edge refraction.
 
 ## Center Magnification
 

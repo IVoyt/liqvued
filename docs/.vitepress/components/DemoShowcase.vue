@@ -10,7 +10,10 @@ const refraction = ref(1.6)
 const magnification = ref(0)
 const magnificationFocus = ref(0.82)
 const surface = ref('convex')
+const refractionMode = ref('edge')
 const toggleVal = ref(true)
+const bubbleAnimation = ref(true)
+const bubbleTimeline = ref(0)
 
 const supported =
     typeof CSS !== 'undefined' &&
@@ -22,7 +25,7 @@ const unsupported = computed(() => !supported)
 
 <template>
   <div class="showcase">
-    <BubbleBackground />
+    <BubbleBackground :animate="bubbleAnimation" :timeline="bubbleTimeline" />
     <!--    <img src="https://picsum.photos/id/1060/1200/800" alt="image" style="position: absolute">-->
     <div class="showcase-overlay" />
 
@@ -37,6 +40,7 @@ const unsupported = computed(() => !supported)
         :bezel="bezel"
         :thickness="thickness"
         :refraction="refraction"
+        :refraction-mode="refractionMode"
         :magnification="magnification"
         :magnification-focus="magnificationFocus"
         :glare-angle="285"
@@ -50,10 +54,13 @@ const unsupported = computed(() => !supported)
           v-model:bezel="bezel"
           v-model:thickness="thickness"
           v-model:refraction="refraction"
+          v-model:refraction-mode="refractionMode"
           v-model:magnification="magnification"
           v-model:magnification-focus="magnificationFocus"
           v-model:toggle="toggleVal"
           v-model:surface="surface"
+          v-model:bubble-animation="bubbleAnimation"
+          v-model:bubble-timeline="bubbleTimeline"
         />
       </Liqvued>
       <div v-else class="showcase-fallback">
@@ -62,10 +69,13 @@ const unsupported = computed(() => !supported)
           v-model:bezel="bezel"
           v-model:thickness="thickness"
           v-model:refraction="refraction"
+          v-model:refraction-mode="refractionMode"
           v-model:magnification="magnification"
           v-model:magnification-focus="magnificationFocus"
           v-model:toggle="toggleVal"
           v-model:surface="surface"
+          v-model:bubble-animation="bubbleAnimation"
+          v-model:bubble-timeline="bubbleTimeline"
         />
       </div>
     </div>

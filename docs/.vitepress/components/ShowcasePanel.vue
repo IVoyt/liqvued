@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { surfaceOptions } from '../../../src/surfaces'
+import { refractionModeOptions } from '../../../src/refraction'
 
-const surface = defineModel('surface')
+const surface = defineModel<string>('surface')
+const refractionMode = defineModel<string>('refractionMode')
 const bezel = defineModel<number>('bezel', { default: 36 })
 const thickness = defineModel<number>('thickness', { default: 60 })
 const refraction = defineModel<number>('refraction', { default: 1.6 })
 const magnification = defineModel<number>('magnification', { default: 0 })
 const magnificationFocus = defineModel<number>('magnificationFocus', { default: 0.82 })
+const bubbleAnimation = defineModel<boolean>('bubbleAnimation', { default: true })
+const bubbleTimeline = defineModel<number>('bubbleTimeline', { default: 0 })
 
 defineProps<{
   slider: number
@@ -33,6 +37,17 @@ const emit = defineEmits<{
       <label class="sc-select">
         <select v-model="surface">
           <option v-for="option in surfaceOptions" :key="option" :value="option">
+            {{ option }}
+          </option>
+        </select>
+      </label>
+    </div>
+
+    <div class="showcase-switch-row">
+      <span class="sc-label">Refraction Mode</span>
+      <label class="sc-select">
+        <select v-model="refractionMode">
+          <option v-for="option in refractionModeOptions" :key="option" :value="option">
             {{ option }}
           </option>
         </select>
@@ -122,6 +137,29 @@ const emit = defineEmits<{
         >
         <span class="sc-toggle-track" />
       </label>
+    </div>
+
+    <div class="showcase-switch-row">
+      <span class="sc-label">Bubble Animation</span>
+      <label class="sc-toggle">
+        <input
+          v-model="bubbleAnimation"
+          type="checkbox"
+        >
+        <span class="sc-toggle-track" />
+      </label>
+    </div>
+
+    <div v-if="!bubbleAnimation" class="showcase-slider-row">
+      <span class="sc-label">Bubble Position <strong>{{ Math.round(bubbleTimeline * 100) }}%</strong></span>
+      <input
+        v-model.number="bubbleTimeline"
+        type="range"
+        min="0"
+        step="0.01"
+        max="1"
+        class="sc-slider"
+      >
     </div>
   </div>
 </template>

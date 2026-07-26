@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { bubblePositionAt } from './bubble-motion'
 
 interface Bubble {
   x: number
@@ -11,12 +12,22 @@ interface Bubble {
   hue: number
 }
 
+const props = withDefaults(defineProps<{
+  animate?: boolean
+  timeline?: number
+}>(), {
+  animate: true,
+  timeline: 0,
+})
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let animId = 0
 let observer: ResizeObserver | undefined
 let bubbles: Bubble[] = []
 let w = 0
 let h = 0
+let animationTimeline = 0
+let lastFrameTime = 0
 
 function initBubbles() {
   const count = Math.max(8, Math.round((w * h) / 18000))
@@ -39,41 +50,35 @@ function createBubble(randomY: boolean): Bubble {
   }
 }
 
-function draw(ctx: CanvasRenderingContext2D) {
+function draw(ctx: CanvasRenderingContext2D, timeline: number) {
   const dpr = window.devicePixelRatio || 1
   ctx.clearRect(0, 0, w * dpr, h * dpr)
   ctx.save()
   ctx.scale(dpr, dpr)
 
   for (const b of bubbles) {
-    b.x += b.drift
-    b.y -= b.speed
+    const position = bubblePositionAt(b, w, h, timeline)
+    const x = position.x
+    const y = position.y
 
-    if (b.x < -b.r) b.x = w + b.r
-    if (b.x > w + b.r) b.x = -b.r
-    if (b.y + b.r < 0) {
-      Object.assign(b, createBubble(false))
-      continue
-    }
-
-    const grad = ctx.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, 0, b.x, b.y, b.r)
+    const grad = ctx.createRadialGradient(x - b.r * 0.3, y - b.r * 0.3, 0, x, y, b.r)
     grad.addColorStop(0, `hsla(${b.hue}, 80%, 55%, ${b.opacity})`)
     grad.addColorStop(0.5, `hsla(${b.hue}, 75%, 45%, ${b.opacity * 0.85})`)
     grad.addColorStop(1, `hsla(${b.hue}, 65%, 35%, ${b.opacity * 0.5})`)
 
     ctx.beginPath()
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
+    ctx.arc(x, y, b.r, 0, Math.PI * 2)
     ctx.fillStyle = grad
     ctx.fill()
 
     const highlight = ctx.createRadialGradient(
-      b.x - b.r * 0.35, b.y - b.r * 0.35, 0,
-      b.x - b.r * 0.35, b.y - b.r * 0.35, b.r * 0.7,
+      x - b.r * 0.35, y - b.r * 0.35, 0,
+      x - b.r * 0.35, y - b.r * 0.35, b.r * 0.7,
     )
     highlight.addColorStop(0, `rgba(255, 255, 255, ${b.opacity * 0.6})`)
     highlight.addColorStop(1, 'rgba(255, 255, 255, 0)')
     ctx.beginPath()
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
+    ctx.arc(x, y, b.r, 0, Math.PI * 2)
     ctx.fillStyle = highlight
     ctx.fill()
   }
@@ -81,13 +86,34 @@ function draw(ctx: CanvasRenderingContext2D) {
   ctx.restore()
 }
 
-function tick() {
+function render() {
   const canvas = canvasRef.value
   if (!canvas) return
   const ctx = canvas.getContext('2d')
   if (!ctx) return
-  draw(ctx)
+  draw(ctx, props.animate ? animationTimeline : props.timeline)
+}
+
+function tick(timestamp: number) {
+  if (!props.animate) return
+  if (lastFrameTime === 0) lastFrameTime = timestamp
+  const delta = timestamp - lastFrameTime
+  lastFrameTime = timestamp
+  animationTimeline += delta / 20000
+  render()
   animId = requestAnimationFrame(tick)
+}
+
+function startAnimation() {
+  if (animId || !props.animate) return
+  lastFrameTime = 0
+  animId = requestAnimationFrame(tick)
+}
+
+function stopAnimation() {
+  if (!animId) return
+  cancelAnimationFrame(animId)
+  animId = 0
 }
 
 function resize() {
@@ -103,7 +129,18 @@ function resize() {
   canvas.style.width = w + 'px'
   canvas.style.height = h + 'px'
   initBubbles()
+  render()
 }
+
+watch(() => [props.animate, props.timeline] as const, ([animate]) => {
+  if (animate) {
+    startAnimation()
+  }
+  else {
+    stopAnimation()
+    render()
+  }
+})
 
 onMounted(() => {
   resize()
@@ -111,12 +148,12 @@ onMounted(() => {
     observer = new ResizeObserver(resize)
     observer.observe(canvasRef.value.parentElement)
   }
-  tick()
+  startAnimation()
   window.addEventListener('resize', resize)
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animId)
+  stopAnimation()
   observer?.disconnect()
   window.removeEventListener('resize', resize)
 })

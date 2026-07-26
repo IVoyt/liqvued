@@ -119,11 +119,12 @@ A per-pixel displacement map is generated on a Canvas, encoded as a PNG data URL
 | `bezel`              | `number`                | `22`       | Width of the displacement bezel in pixels                                                |
 | `thickness`          | `number`                | `42`       | Maximum displacement magnitude in pixels                                                 |
 | `refraction`         | `number`                | `1`        | Refraction index multiplier                                                              |
+| `refractionMode`     | [`RefractionMode`](/api#types) | `'edge'` | Refraction direction mode                                                                |
 | `magnification`      | `number`                | `0`        | Center magnification amount. Positive values enlarge, negative values shrink             |
 | `magnificationFocus` | `number`                | `0.82`     | Focus radius of the magnification area. Lower values keep the effect tighter             |
 | `blur`               | `number`                | `0.4`      | CSS backdrop-filter blur amount                                                          |
 | `surface`            | [`Surface`](/api#types) | `'convex'` | Surface profile shape                                                                    |
 | `specularOpacity`    | `number`                | `0.45`     | Opacity of the specular highlight                                                        |
-| `glareAngle`         | `number`                | `-60`      | Light source angle in degrees for specular highlight                                     |
+| `glareAngle`         | `number \| false`       | `-60`      | Light source angle in degrees for specular highlight. Set `false` to disable             |
 | `glassBackground`    | `string`                | —          | Glass panel background color (auto-derived from `asProps.color` when available)          |
 | `fallbackOnly`       | `boolean`               | `false`    | When `true`, disables the SVG displacement effect and uses only CSS blur                 |

@@ -10,8 +10,9 @@ import {
   ref,
   watch,
 } from 'vue'
+import { refractionDirection, refractionModeStrength } from './refraction'
 import { distanceToRoundedRectEdge, normalFromRoundedRect } from './shape'
-import type { Surface } from './types'
+import type { RefractionMode, Surface } from './types'
 
 const props = withDefaults(defineProps<{
   as?: string | Component
@@ -21,12 +22,13 @@ const props = withDefaults(defineProps<{
   bezel?: number
   thickness?: number
   refraction?: number
+  refractionMode?: RefractionMode
   magnification?: number
   magnificationFocus?: number
   blur?: number
   surface?: Surface
   specularOpacity?: number
-  glareAngle?: number
+  glareAngle?: number | false
   glassBackground?: string
   fallbackOnly?: boolean
 }>(), {
@@ -34,9 +36,11 @@ const props = withDefaults(defineProps<{
   asProps: () => ({}),
   fallbackOnly: false,
   radius: 32,
+  borderRadius: undefined,
   bezel: 22,
   thickness: 42,
   refraction: 1,
+  refractionMode: 'edge',
   magnification: 0,
   magnificationFocus: 0.82,
   blur: 0.4,
@@ -208,10 +212,12 @@ function buildMaps() {
   const vectors: Array<[number, number]> = []
   let max = 1
 
-  const light = {
-    x: Math.cos((props.glareAngle * Math.PI) / 180),
-    y: Math.sin((props.glareAngle * Math.PI) / 180),
-  }
+  const light = props.glareAngle !== false
+    ? {
+        x: Math.cos((props.glareAngle * Math.PI) / 180),
+        y: Math.sin((props.glareAngle * Math.PI) / 180),
+      }
+    : { x: 0, y: 0 }
   const edgeBand = Math.max(
     1,
     Math.min(props.bezel, Math.min(w, h) * 0.28),
@@ -235,10 +241,13 @@ function buildMaps() {
           bend *
           props.thickness *
           smootherStep(1 - t) *
+          refractionModeStrength(props.refractionMode, t) *
           props.refraction
 
-        vx = -n.x * amount
-        vy = -n.y * amount
+        const direction = refractionDirection(props.refractionMode, n, x, y, w, h, t)
+
+        vx = direction.x * amount
+        vy = direction.y * amount
 
         max = Math.max(max, Math.abs(vx), Math.abs(vy))
 
@@ -412,6 +421,7 @@ watch(
     props.bezel,
     props.thickness,
     props.refraction,
+    props.refractionMode,
     props.magnification,
     props.magnificationFocus,
     props.surface,
