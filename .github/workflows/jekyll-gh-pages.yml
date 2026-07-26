@@ -36,7 +36,7 @@ jobs:
           pnpm install
         working-directory: docs
       - name: Build
-        run: pnpm docs:build
+        run: pnpm approve-builds --all && pnpm docs:build
         working-directory: docs
       - id: pages
         uses: actions/configure-pages@v5
