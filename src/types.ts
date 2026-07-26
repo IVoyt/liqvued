@@ -8,3 +8,5 @@ export type Surface =
   | 'ripple'
   | 'noise'
   | 'asymmetric'
+
+export type RefractionMode = 'edge' | 'center' | 'split'

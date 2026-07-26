@@ -60,12 +60,13 @@ import { Liqvued } from 'liqvued'
 | bezel           | number              | 22         | Width of the displacement bezel in pixels                                              |
 | thickness       | number              | 42         | Maximum displacement magnitude in pixels                                               |
 | refraction      | number              | 1          | Refraction index multiplier                                                            |
+| refractionMode  | string              | `'edge'`   | Refraction direction mode: `edge`, `center`, or `split`                                |
 | magnification   | number              | 0          | Center magnification amount. Positive values enlarge, negative values shrink           |
 | magnificationFocus | number           | 0.82       | Focus radius of the magnification area. Lower values concentrate the effect near center |
 | blur            | number              | 0.4        | CSS backdrop-filter blur amount                                                        |
 | surface         | string              | `'convex'` | Glass surface profile shape                                                            |
 | specularOpacity | number              | 0.45       | Opacity of the specular highlight                                                      |
-| glareAngle      | number              | -60        | Light source angle in degrees for specular highlight                                   |
+| glareAngle      | number \| false     | -60        | Light source angle in degrees for specular highlight. Set `false` to disable           |
 | glassBackground | string              | —          | Glass panel background color (auto-derived from `asProps.color` when available)        |
 | fallbackOnly    | boolean             | `false`    | When `true`, disables the SVG displacement effect and uses only CSS blur               |
 | as              | string \| Component | `'div'`    | HTML tag or Vue component to render as (rendered as a child of the glass root)         |
@@ -82,6 +83,12 @@ import { Liqvued } from 'liqvued'
 - `ripple` — small wave modulation across the edge band
 - `noise` — irregular organic edge distortion
 - `asymmetric` — biased profile with more weight toward one side of the edge band
+
+### Refraction Modes
+
+- `edge` — original behavior; displacement follows the rounded edge normal
+- `center` — displacement points inward from each edge toward the shape centerline
+- `split` — outer and inner bezel halves bend in opposite directions with a neutral midpoint
 
 ## Dynamic Element Rendering
 
@@ -106,7 +113,7 @@ The fallback applies `backdrop-filter: blur(12px)` with a subtle border and shad
 
 ## How It Works
 
-The component generates a per-pixel displacement map as an RGBA PNG (red/green channels encode X/Y displacement vectors), injects it into an SVG `<feDisplacementMap>` filter, and applies it via `backdrop-filter` combined with CSS blur. The surface profile functions define the edge refraction slope along the bezel, while `magnification` and `magnificationFocus` control an optional center lens effect. A separate specular highlight map is generated and composited via `feBlend` to simulate surface lighting.
+The component generates a per-pixel displacement map as an RGBA PNG (red/green channels encode X/Y displacement vectors), injects it into an SVG `<feDisplacementMap>` filter, and applies it via `backdrop-filter` combined with CSS blur. The surface profile functions define the edge refraction strength along the bezel, while `refractionMode` controls the displacement direction. `magnification` and `magnificationFocus` control an optional center lens effect. A separate specular highlight map is generated and composited via `feBlend` to simulate surface lighting.
 
 ## License
 
